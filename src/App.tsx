@@ -6,7 +6,7 @@ function App() {
   return (
     <>
       <div className={'editor-shell'}>
-        <Editor />
+        <Editor content={'# Hello, World!'} />
       </div>
     </>
   );

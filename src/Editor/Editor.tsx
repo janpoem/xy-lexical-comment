@@ -1,7 +1,15 @@
-import { $getRoot, $getSelection, type EditorState } from 'lexical';
+import {
+  $getRoot,
+  $getSelection,
+  type EditorState,
+  LexicalEditor
+} from 'lexical';
 import { useEffect, useState } from 'react';
 
-import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import {
+  InitialConfigType,
+  LexicalComposer,
+} from '@lexical/react/LexicalComposer';
 import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 // import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -25,6 +33,8 @@ import { TableContext } from './plugins/TablePlugin';
 import PlaygroundNodes from './nodes/PlaygroundNodes';
 
 import './Editor.css';
+import { createEmptyEditorState } from './utils/createEmptyEditorState.ts';
+import { transMarkdown } from './utils/transMarkdown.ts';
 
 // When the editor changes, you can get notified via the
 // LexicalOnChangePlugin!
@@ -53,21 +63,24 @@ function MyCustomAutoFocusPlugin() {
   return null;
 }
 
-// Catch any errors that occur during Lexical updates and log them
-// or throw them as needed. If you don't throw them, Lexical will
-// try to recover gracefully without losing user data.
-function onError(error: Error) {
-  console.error(error);
+export type EditorProps = {
+  content?: string;
 }
 
-export function Editor() {
-  const initialConfig = {
+export function Editor({ content }: EditorProps) {
+  const initialConfig: InitialConfigType = {
     namespace: 'Playground',
     theme: PlaygroundEditorTheme,
     nodes: [...PlaygroundNodes],
     onError: (error: Error) => {
       throw error;
     },
+    editorState: (editor: LexicalEditor) => {
+      if (content != null && content.trim().length) {
+        editor.update(() => transMarkdown(content));
+      }
+      return '';
+    }
   };
 
   return (
